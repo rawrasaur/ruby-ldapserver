@@ -6,8 +6,6 @@ require 'logger'
 module LDAP
 class Server
 
-  attr_accessor :root_dse
-
   DEFAULT_OPT = {
       :port=>389,
       :nodelay=>true,
@@ -36,16 +34,6 @@ class Server
     @logger = @opt[:logger]
     LDAP::Server.ssl_prepare(@opt)
     @schema = opt[:schema]	# may be nil
-    @root_dse = Hash.new { |h,k| h[k] = [] }.merge({
-	'objectClass' => ['top','openLDAProotDSE','extensibleObject'],
-	'supportedLDAPVersion' => ['3'],
-	#'altServer' =>
-	#'supportedExtension' =>
-	#'supportedControl' =>
-	#'supportedSASLMechanisms' =>
-    })
-    @root_dse['subschemaSubentry'] = [@schema.subschema_dn] if @schema
-    @root_dse['namingContexts'] = opt[:namingContexts] if opt[:namingContexts]
   end
 
   # create opt[:ssl_ctx] from the other ssl options

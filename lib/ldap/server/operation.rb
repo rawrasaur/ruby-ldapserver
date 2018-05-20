@@ -253,19 +253,6 @@ class Server
       @sizelimit = client_sizelimit if client_sizelimit > 0 and
                    (@sizelimit.nil? or client_sizelimit < @sizelimit)
 
-      if baseObject.empty? and scope == BaseObject
-        send_SearchResultEntry("", @server.root_dse) if
-          @server.root_dse and LDAP::Server::Filter.run(filter, @server.root_dse)
-        send_SearchResultDone(0)
-        return
-      elsif @schema and baseObject == @schema.subschema_dn
-        send_SearchResultEntry(baseObject, @schema.subschema_subentry) if
-          @schema and @schema.subschema_subentry and
-          LDAP::Server::Filter.run(filter, @schema.subschema_subentry)
-        send_SearchResultDone(0)
-        return
-      end
-
       t = server_timelimit || 10
       t = client_timelimit if client_timelimit > 0 and client_timelimit < t
 
