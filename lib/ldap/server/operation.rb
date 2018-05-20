@@ -115,6 +115,8 @@ class Server
       avseq = []
 
       avs.each do |attr, vals|
+        attr = attr.to_s
+
         if !@attributes.include?(attr)
           next unless sendall
           if @schema
