@@ -100,7 +100,14 @@ class Server
       def eq(vals, m)
         return false if vals.nil?
         m = normalize(m)
-        vals.each { |v| return true if normalize(v) == m }
+
+        case vals
+        when Array
+          vals.each { |v| return true if normalize(v) == m }
+        else
+          return true if normalize(vals) == m
+        end
+
         return false
       end
     end
