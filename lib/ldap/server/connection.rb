@@ -20,7 +20,7 @@ class Server
       @opt = opt
       @mutex = Mutex.new
       @threadgroup = ThreadGroup.new
-      @binddn = nil
+      @bind_context = nil
       @version = 3
       @logger = @opt[:logger]
       @ssl = false
@@ -120,8 +120,7 @@ class Server
             case protocolOp.tag
             when 0 # BindRequest
               abandon_all
-              @binddn, @version = operationClass.new(self,messageId,*ocArgs).
-                                  do_bind(protocolOp, controls)
+              @bind_context, @version = operationClass.new(self, messageId, @bind_context, *ocArgs).do_bind(protocolOp, controls)
 
             when 2 # UnbindRequest
               throw(:close)
@@ -177,7 +176,7 @@ class Server
       ocArgs = @opt[:operation_args] || []
       thr = Thread.new do
         begin
-          operationClass.new(self,messageId,*ocArgs).
+          operationClass.new(self, messageId, @bind_context, *ocArgs).
           send(meth,protocolOp,controls)
         rescue Exception => e
           log_exception e

@@ -22,18 +22,22 @@ class Server
   # and the sending of responses.
 
   class Operation
+    attr_reader :bind_context
 
     # An instance of this object is created by the Connection object
     # for each operation which is requested by the client. If you subclass
     # Operation, and you override initialize, make sure you call 'super'.
 
-    def initialize(connection, messageID)
+    def initialize(connection, messageID, bind_context)
       @connection = connection
+      @bind_context = bind_context
+
       @respEnvelope = OpenSSL::ASN1::Sequence([
         OpenSSL::ASN1::Integer(messageID),
         # protocolOp,
         # controls [0] OPTIONAL,
       ])
+
       @schema = @connection.opt[:schema]
       @server = @connection.opt[:server]
     end
@@ -198,7 +202,7 @@ class Server
       dn = nil if dn == ""
       authentication = protocolOp.value[2]
 
-      case authentication.tag   # tag_class == :CONTEXT_SPECIFIC (check why)
+      bind_context = case authentication.tag # tag_class == :CONTEXT_SPECIFIC (check why)
       when 0
         simple_bind(version, dn, authentication.value)
       when 3
@@ -210,11 +214,13 @@ class Server
       else
         raise LDAP::ResultError::ProtocolError, "BindRequest bad AuthenticationChoice"
       end
-      send_BindResponse(0)
-      return dn, version
 
+      send_BindResponse(0)
+
+      return bind_context, version
     rescue LDAP::ResultError => e
-      send_BindResponse(e.to_i, :errorMessage=>e.message)
+      send_BindResponse(e.to_i, errorMessage: e.message)
+
       return nil, version
     end
 
