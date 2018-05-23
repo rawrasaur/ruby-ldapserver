@@ -28,7 +28,7 @@ class Server
     require 'etc' if opt[:group] or opt[:user]
     Process.gid = Process.egid = Etc.getgrnam(opt[:group]).gid if opt[:group]
     Process.uid = Process.euid = Etc.getpwnam(opt[:user]).uid if opt[:user]
-   
+
     # Typically the O/S will buffer response data for 100ms before sending.
     # If the response is sent as a single write() then there's no need for it.
     if opt[:nodelay]
@@ -50,7 +50,9 @@ class Server
             begin
               s.instance_eval(&blk)
             rescue Exception => e
-              opt[:logger].error(s.peeraddr[3]) {"#{e}: #{e.backtrace[0]}"}
+              peeraddr = s.peeraddr[3] rescue s.inspect
+
+              opt[:logger].error(peeraddr) {"#{e}: #{e.backtrace[0]}"}
             ensure
               s.close
             end
@@ -86,4 +88,4 @@ if __FILE__ == $0
   end
   #sleep 10; t.raise Interrupt	# uncomment to run for fixed time period
   t.join
-end 
+end
