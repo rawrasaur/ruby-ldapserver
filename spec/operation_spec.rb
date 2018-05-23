@@ -1,12 +1,14 @@
 require 'spec_helper'
 
+require 'openssl'
+
 require 'ldap/server/operation'
 
 describe LDAP::Server::Operation do
   let(:server) { double 'server' }
   let(:connection) { double "connection", opt: { schema: schema, server: server } }
   let(:message_id) { 337 }
-  subject(:operation) { LDAP::Server::Operation.new connection, message_id }
+  subject(:operation) { LDAP::Server::Operation.new(connection, message_id, nil) }
 
   context 'on search' do
     before do

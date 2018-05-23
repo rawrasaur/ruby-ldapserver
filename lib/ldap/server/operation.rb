@@ -6,15 +6,19 @@ module LDAP
 class Server
 
   # Scope
-  BaseObject		= 0
-  SingleLevel		= 1
-  WholeSubtree		= 2
+  SCOPE = {
+    0 => :base,
+    1 => :children,
+    2 => :subtree
+  }.freeze
 
   # DerefAliases
-  NeverDerefAliases	= 0
-  DerefInSearching	= 1
-  DerefFindingBaseObj	= 2
-  DerefAlways		= 3
+  DEREF_ALIASES = {
+    0 => :never,
+    1 => :in_searching,
+    2 => :finding_base,
+    3 => :always
+  }.freeze
 
   # Object to handle a single LDAP request. Typically you would
   # subclass this object and override methods 'simple_bind', 'search' etc.
@@ -248,8 +252,8 @@ class Server
 
     def do_search(protocolOp, controls) # :nodoc:
       baseObject = protocolOp.value[0].value
-      scope = protocolOp.value[1].value
-      deref = protocolOp.value[2].value
+      scope = SCOPE.fetch(protocolOp.value[1].value.to_i)
+      deref = DEREF_ALIASES.fetch(protocolOp.value[2].value.to_i)
       client_sizelimit = protocolOp.value[3].value
       client_timelimit = protocolOp.value[4].value.to_i
       @typesOnly = protocolOp.value[5].value
